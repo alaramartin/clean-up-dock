@@ -5,7 +5,8 @@ final class Sweep {
     private let items: [DockItem]
     private var windows: [OverlayWindow] = []
     private var panel: ConfirmPanel?
-    private let previousApp = NSWorkspace.shared.frontmostApplication
+    /// The app to give focus back to when the sweep ends.
+    private let previousApp: NSRunningApplication?
     private let onFinish: (Sweep) -> Void
 
     /// The drag rectangle in global Cocoa coordinates, while the mouse is down.
@@ -14,7 +15,8 @@ final class Sweep {
     private(set) var protectedHits: [DockItem] = []
     var isConfirming: Bool { panel != nil }
 
-    init(onFinish: @escaping (Sweep) -> Void) {
+    init(previousApp: NSRunningApplication?, onFinish: @escaping (Sweep) -> Void) {
+        self.previousApp = previousApp
         items = Dock.appItems().filter(\.isRemovable)
         self.onFinish = onFinish
     }

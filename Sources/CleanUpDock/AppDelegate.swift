@@ -5,6 +5,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var hotKey: HotKey?
     private var sweep: Sweep?
+    /// The most recent app other than this one to come to the front. When a sweep is started from a link or by
+    /// reopening the app, macOS has already brought this app forward, so the current front app isn't the one to go back to.
+    private var lastOtherApp: NSRunningApplication? = NSWorkspace.shared.frontmostApplication
 
     func applicationDidFinishLaunching(_ note: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
@@ -16,6 +19,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
         allowCursorChangesInBackground()
+        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] note in
+            guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+                  app.processIdentifier != ProcessInfo.processInfo.processIdentifier else { return }
+            self?.lastOtherApp = app
+        }
         hotKey = HotKey(keyCode: kVK_ANSI_D, modifiers: controlKey | optionKey) { [weak self] in self?.toggleSweep() }
 
         if !AXIsProcessTrusted() {
@@ -60,7 +68,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func startSweep() {
         guard sweep == nil else { return }
         guard AXIsProcessTrusted() else { askForAccessibility(); return }
-        let s = Sweep { [weak self] finished in
+        let s = Sweep(previousApp: lastOtherApp) { [weak self] finished in
             if self?.sweep === finished { self?.sweep = nil }
         }
         sweep = s

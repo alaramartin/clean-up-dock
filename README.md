@@ -8,6 +8,12 @@ A menu bar app for clearing out your Dock. Click the dashed-rectangle icon in th
 - Folders, minimized windows, Finder and Trash are never touched.
 - Escape, right-click, or clicking outside the panel cancels.
 
+## Other ways to start a sweep
+
+- **Raycast:** the extension in `raycast/` adds a "Clean Up Dock" command. Type it in Raycast and press Return.
+- **Spotlight, Raycast's app search, Finder:** opening Clean Up Dock while it's already running starts a sweep.
+- **A link:** `open cleanupdock://sweep` from Terminal, a script or a shortcut.
+
 ## Protected apps
 
 Right-click the menu bar icon and go to **Protected Apps → Add App…** to pick apps that should never be quit or removed. They show up grey with a lock while you drag. Click one in the list to unprotect it.

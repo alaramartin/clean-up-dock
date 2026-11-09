@@ -15,6 +15,8 @@ A menu bar app. Click its icon (or press Ctrl-Option-D), drag a rectangle over t
 | Safety net | After you let go, a small panel appears above the selection listing the apps, with Cancel (Escape) and Quit & Remove (Return). |
 | Start a sweep | Left-click the menu bar icon, or Ctrl-Option-D. Escape or right-click cancels at any point. |
 | Open at login | No. |
+| Raycast | A Store extension (`raycast/`) with one no-view command. It closes Raycast's window and opens `cleanupdock://sweep`; the app does the rest. If the app isn't installed, it shows a toast linking to the latest release. |
+| Other launchers | Opening the app while it's running (`applicationShouldHandleReopen`) starts a sweep, so Spotlight and Raycast's own app search work without the extension. Launching it fresh doesn't. |
 
 ## How it works
 
@@ -40,6 +42,11 @@ So the order for each selected app is:
 All apps are quit in parallel. Removals run one at a time, re-reading the Dock before each, because icon positions shift after every removal.
 
 **Fallback.** The menu titles are English. If "Remove from Dock" can't be found (another system language, or a future macOS changes the menu), the app removes matching entries from `persistent-apps` and `recent-apps` in the `com.apple.dock` preferences and restarts the Dock. The icons blink for a second but the result is the same.
+
+### Focus
+When a sweep ends, focus goes back to the app that was in front before it. The app tracks the last other app to activate
+(`NSWorkspace.didActivateApplicationNotification`), because a link or a reopen brings Clean Up Dock forward before the
+sweep starts.
 
 ### Protected apps
 Stored in UserDefaults as bundle paths. The right-click menu has a "Protected Apps" submenu: each protected app (click to unprotect), then "Add App…" which opens a file picker in /Applications.
