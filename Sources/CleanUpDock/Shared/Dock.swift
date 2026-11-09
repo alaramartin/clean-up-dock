@@ -21,10 +21,12 @@ struct DockItem {
 
     /// A square around just the icon picture, in the same coordinates as `frame`.
     /// The Dock's AX frame is taller than the icon (it includes space above it and the running dot below).
-    /// The icon slot is `tilesize` points square and sits 4pt in from the screen edge; the picture inside
+    /// The icon slot is `tilesize` points square (or smaller when the Dock is full) and sits 4pt in from the screen edge; the picture inside
     /// fills about 80% of that, so 86% frames it with a little room.
     var iconFrame: NSRect {
-        let slot = min(Dock.tileSize, frame.width, frame.height)
+        // A full Dock shrinks its icons below the tilesize setting; the AX frame is then the better measure
+        // (it's 2 pt wider than the icon slot).
+        let slot = min(Dock.tileSize, frame.width - 2, frame.height)
         let side = (slot * 0.86).rounded()
         let edgeGap: CGFloat = 4
         let center: NSPoint

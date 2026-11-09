@@ -18,7 +18,17 @@
       "name": "clean-up-dock",
       "title": "Clean Up Dock",
       "description": "Start a sweep: drag a box over Dock icons, confirm, and those apps quit and leave the Dock.",
-      "mode": "no-view"
+      "mode": "no-view",
+      "preferences": [
+        {
+          "name": "protectedApps",
+          "title": "Protected Apps",
+          "type": "textfield",
+          "required": false,
+          "default": "",
+          "description": "App names or bundle IDs a sweep never quits or removes, separated by commas. For example: Terminal, Notes, com.spotify.client"
+        }
+      ]
     }
   ],
   "dependencies": {

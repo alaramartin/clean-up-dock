@@ -15,7 +15,7 @@ A menu bar app. Click its icon (or press Ctrl-Option-D), drag a rectangle over t
 | Safety net | After you let go, a small panel appears above the selection listing the apps, with Cancel (Escape) and Quit & Remove (Return). |
 | Start a sweep | Left-click the menu bar icon, or Ctrl-Option-D. Escape or right-click cancels at any point. |
 | Open at login | No. |
-| Raycast | A Store extension (`raycast/`) with one no-view command. It closes Raycast's window and opens `cleanupdock://sweep`; the app does the rest. If the app isn't installed, it shows a toast linking to the latest release. |
+| Raycast | A Store extension (`raycast/`) that works on its own, without the menu bar app. Its one no-view command runs a Swift helper (`raycast/swift`) built from the same sweep code (`Sources/CleanUpDock/Shared`, copied by `scripts/sync-raycast.sh`). Protected apps come from a preference. Raycast needs Accessibility. |
 | Other launchers | Opening the app while it's running (`applicationShouldHandleReopen`) starts a sweep, so Spotlight and Raycast's own app search work without the extension. Launching it fresh doesn't. |
 
 ## How it works
@@ -42,6 +42,12 @@ So the order for each selected app is:
 All apps are quit in parallel. Removals run one at a time, re-reading the Dock before each, because icon positions shift after every removal.
 
 **Fallback.** The menu titles are English. If "Remove from Dock" can't be found (another system language, or a future macOS changes the menu), the app removes matching entries from `persistent-apps` and `recent-apps` in the `com.apple.dock` preferences and restarts the Dock. The icons blink for a second but the result is the same.
+
+### The Raycast helper
+Raycast runs each `@raycast` Swift function as a short-lived helper process whose generated entry point is `async`.
+`sweepDock` is deliberately synchronous and runs `NSApp.run()` itself: inside an async function, Swift's main executor
+stops the main run loop while AppKit is handling events, and the process exits mid-sweep. It returns the names of the
+apps that actually quit and left the Dock, and the command shows them in a HUD.
 
 ### Focus
 When a sweep ends, focus goes back to the app that was in front before it. The app tracks the last other app to activate

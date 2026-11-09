@@ -1,16 +1,23 @@
+// Copied from Sources/CleanUpDock/Shared/Remover.swift by scripts/sync-raycast.sh. Edit the original, then run the script.
+
 import AppKit
 
 /// Quits the selected apps and takes their icons out of the Dock.
 enum Remover {
-    static func run(_ apps: [AppRef]) async {
+    /// Returns the apps that quit and left the Dock. An app that refused to quit (e.g. its save dialog was
+    /// cancelled) isn't included.
+    @discardableResult
+    static func run(_ apps: [AppRef]) async -> [AppRef] {
         // Quit everything at once, then remove icons one by one as each app finishes quitting.
         await withTaskGroup(of: AppRef?.self) { group in
             for app in apps {
                 group.addTask { await quit(app) ? app : nil }
             }
             var failed: [AppRef] = []
+            var removed: [AppRef] = []
             for await app in group {
                 guard let app else { continue }
+                removed.append(app)
                 // Let the Dock settle (a just-quit app can take a moment to move into Recents).
                 try? await Task.sleep(for: .milliseconds(400))
                 let ok = await MainActor.run { () -> Bool in
@@ -23,6 +30,7 @@ enum Remover {
                 let leftover = failed
                 await MainActor.run { Dock.removeViaPreferences(leftover) }
             }
+            return removed
         }
     }
 

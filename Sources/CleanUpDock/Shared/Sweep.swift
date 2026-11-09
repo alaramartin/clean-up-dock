@@ -2,12 +2,19 @@ import AppKit
 
 /// One drag-to-select session: overlay windows on every screen, the rectangle, the highlights and the confirm panel.
 final class Sweep {
-    private let items: [DockItem]
+    /// Dock app icons, re-read at every press and release: the Dock can change during a sweep (an app launches,
+    /// a Handoff icon appears, the icons shrink to fit), and selection must match what's on screen.
+    private var items: [DockItem]
     private var windows: [OverlayWindow] = []
     private var panel: ConfirmPanel?
     /// The app to give focus back to when the sweep ends.
     private let previousApp: NSRunningApplication?
+    private let isProtected: (DockItem) -> Bool
+    /// Called when the overlay closes.
     private let onFinish: (Sweep) -> Void
+    /// Called when everything is done: with the names of the apps that quit and left the Dock (not ones that
+    /// refused to quit), or with none right after a cancel.
+    private let onComplete: ([String]) -> Void
 
     /// The drag rectangle in global Cocoa coordinates, while the mouse is down.
     private(set) var rect: NSRect?
@@ -15,10 +22,13 @@ final class Sweep {
     private(set) var protectedHits: [DockItem] = []
     var isConfirming: Bool { panel != nil }
 
-    init(previousApp: NSRunningApplication?, onFinish: @escaping (Sweep) -> Void) {
+    init(previousApp: NSRunningApplication?, isProtected: @escaping (DockItem) -> Bool,
+         onFinish: @escaping (Sweep) -> Void = { _ in }, onComplete: @escaping ([String]) -> Void = { _ in }) {
         self.previousApp = previousApp
+        self.isProtected = isProtected
         items = Dock.appItems().filter(\.isRemovable)
         self.onFinish = onFinish
+        self.onComplete = onComplete
     }
 
     /// The area covered by the Dock's app icons.
@@ -52,6 +62,7 @@ final class Sweep {
 
     func mouseDown(at p: NSPoint) {
         if isConfirming { cancel(); return }
+        items = Dock.appItems().filter(\.isRemovable)
         anchor = p
         update(to: p)
     }
@@ -60,6 +71,7 @@ final class Sweep {
 
     func mouseUp(at p: NSPoint) {
         guard anchor != nil else { return }
+        items = Dock.appItems().filter(\.isRemovable)
         update(to: p)
         anchor = nil
         rect = nil
@@ -72,8 +84,8 @@ final class Sweep {
         let r = NSRect(x: min(a.x, p.x), y: min(a.y, p.y), width: abs(a.x - p.x), height: abs(a.y - p.y))
         rect = r
         let hits = items.filter { $0.frame.intersects(r) || $0.frame.contains(a) }
-        selected = hits.filter { !Protected.contains($0) }
-        protectedHits = hits.filter { Protected.contains($0) }
+        selected = hits.filter { !isProtected($0) }
+        protectedHits = hits.filter { isProtected($0) }
         redraw()
     }
 
@@ -91,18 +103,24 @@ final class Sweep {
     }
 
     private func commit() {
-        let apps = selected.map(\.ref)
+        let chosen = selected
+        let apps = chosen.map(\.ref)
         teardown(restoreFocus: false)
         Task { @MainActor in
-            await Remover.run(apps)
+            let done = await Remover.run(apps)
+            let names = chosen.filter { item in done.contains { $0.matches(item.ref) } }.map(\.title)
             // Give focus back to whatever was in front, unless it was just quit.
             if let prev = previousApp, !prev.isTerminated, !apps.contains(where: { $0.matches(prev) }) {
                 prev.activate()
             }
+            onComplete(names)
         }
     }
 
-    func cancel() { teardown(restoreFocus: true) }
+    func cancel() {
+        teardown(restoreFocus: true)
+        onComplete([])
+    }
 
     private func teardown(restoreFocus: Bool) {
         NSCursor.arrow.set()

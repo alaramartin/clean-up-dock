@@ -10,9 +10,12 @@ A menu bar app for clearing out your Dock. Click the dashed-rectangle icon in th
 
 ## Other ways to start a sweep
 
-- **Raycast:** the extension in `raycast/` adds a "Clean Up Dock" command. Type it in Raycast and press Return.
 - **Spotlight, Raycast's app search, Finder:** opening Clean Up Dock while it's already running starts a sweep.
 - **A link:** `open cleanupdock://sweep` from Terminal, a script or a shortcut.
+
+## Raycast extension
+
+`raycast/` is a Raycast extension that does the same sweep without this app: type "Clean Up Dock" in Raycast and press Return. It carries its own copy of the sweep code in `raycast/swift`, which Raycast compiles. The shared files live in `Sources/CleanUpDock/Shared`; after editing them, run `scripts/sync-raycast.sh` to update the extension's copy.
 
 ## Protected apps
 

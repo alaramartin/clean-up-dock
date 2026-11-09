@@ -1,21 +1,34 @@
-import { PopToRootType, Toast, closeMainWindow, getApplications, open, showToast } from "@raycast/api";
+import { PopToRootType, Toast, closeMainWindow, getPreferenceValues, open, showHUD, showToast } from "@raycast/api";
+import { hasAccessibility, sweepDock } from "swift:../swift";
 
-// The command hands off to the Clean Up Dock Mac app, which draws the selection overlay and does the quitting.
-const APP_BUNDLE_ID = "com.alaramartin.clean-up-dock";
-const DOWNLOAD_URL = "https://github.com/alaramartin/clean-up-dock/releases/latest";
+const ACCESSIBILITY_SETTINGS = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility";
 
 export default async function Command() {
-  const installed = (await getApplications()).some((app) => app.bundleId === APP_BUNDLE_ID);
-  if (!installed) {
+  if (!(await hasAccessibility())) {
     await showToast({
       style: Toast.Style.Failure,
-      title: "Clean Up Dock isn't installed",
-      message: "It's a free Mac app that this command opens.",
-      primaryAction: { title: "Download Clean Up Dock", onAction: () => open(DOWNLOAD_URL) },
+      title: "Raycast needs Accessibility access",
+      message: "Clean Up Dock uses it to find and remove Dock icons.",
+      primaryAction: { title: "Open Accessibility Settings", onAction: () => open(ACCESSIBILITY_SETTINGS) },
     });
     return;
   }
-  // Close Raycast first so the overlay gets the mouse and keyboard.
+
+  const { protectedApps = "" } = getPreferenceValues<Preferences.CleanUpDock>();
+  const protectedList = protectedApps
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  // Close Raycast first so the selection overlay gets the mouse and keyboard.
   await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
-  await open("cleanupdock://sweep");
+  const { removed } = await sweepDock(protectedList);
+  if (removed.length > 0) {
+    await showHUD(`Quit and removed ${formatList(removed)}`);
+  }
+}
+
+function formatList(names: string[]) {
+  if (names.length <= 2) return names.join(" and ");
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }

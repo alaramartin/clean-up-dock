@@ -3,18 +3,18 @@
 Type "Clean Up Dock" in Raycast and press Return. Your cursor turns into a crosshair: drag a box over some Dock icons and let go. A small panel lists the apps you caught, and when you confirm, they quit and are taken out of the Dock.
 
 - Every app icon the box touches counts, including apps in the Dock's Recents section.
-- Running apps quit the normal way, so an app with unsaved work can ask you to save first. Its icon is removed once it has quit.
+- Running apps quit the normal way, so an app with unsaved work can ask you to save first. Its icon is removed once it has quit; if you cancel the save, the app stays.
 - Folders, minimized windows, Finder and Trash are never touched.
-- Escape cancels at any point.
+- Escape, a right-click, or a click outside the panel cancels.
 
 ## Setup
 
-This command opens **Clean Up Dock**, a free menu bar app that draws the selection box and does the quitting and removing. Install it first:
+Raycast needs **Accessibility** access to find the icons in your Dock and remove them: **System Settings → Privacy & Security → Accessibility**, then turn on Raycast. If it's missing, the command says so and opens the setting for you.
 
-1. Download `CleanUpDock.zip` from the [latest release](https://github.com/alaramartin/clean-up-dock/releases/latest), unzip it and move **Clean Up Dock.app** to Applications.
-2. Open it. It isn't notarized, so macOS blocks the first launch: go to **System Settings → Privacy & Security** and click **Open Anyway**.
-3. Allow it under **System Settings → Privacy & Security → Accessibility**. It needs this to find the icons in your Dock and remove them.
+## Protected apps
 
-The app needs to be version 1.1.0 or later. If it isn't installed, the command shows a link to download it.
+In the command's preferences, list apps a sweep should never quit or remove, by name or bundle ID, separated by commas (for example `Terminal, Notes, com.spotify.client`). They show up grey with a lock while you drag.
 
-The app also has a menu bar icon and a Ctrl-Option-D shortcut that start the same sweep, plus a list of protected apps that a sweep never touches. Source: [github.com/alaramartin/clean-up-dock](https://github.com/alaramartin/clean-up-dock).
+## Menu bar version
+
+The same sweep is also available as a standalone menu bar app with a Ctrl-Option-D shortcut: [github.com/alaramartin/clean-up-dock](https://github.com/alaramartin/clean-up-dock). You don't need it for this extension.
