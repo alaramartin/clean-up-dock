@@ -32,6 +32,13 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>LSUIElement</key><true/>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key><string>com.alaramartin.clean-up-dock</string>
+            <key>CFBundleURLSchemes</key><array><string>cleanupdock</string></array>
+        </dict>
+    </array>
 </dict>
 </plist>
 PLIST

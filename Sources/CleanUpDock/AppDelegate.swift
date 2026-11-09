@@ -24,6 +24,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    // MARK: - Other ways in: the cleanupdock://sweep link (used by the Raycast extension) and opening the app again
+    // (Raycast's or Spotlight's app search, Finder, `open -a`) both start a sweep.
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        if urls.contains(where: { $0.scheme == "cleanupdock" && ($0.host ?? "") == "sweep" }) {
+            DispatchQueue.main.async { self.startSweep() }
+        }
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        DispatchQueue.main.async { self.startSweep() }
+        return false
+    }
+
     @objc private func clicked() {
         let e = NSApp.currentEvent
         if e?.type == .rightMouseUp || e?.modifierFlags.contains(.control) == true {
@@ -39,6 +53,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func toggleSweep() {
         if let sweep { sweep.cancel(); return }
+        startSweep()
+    }
+
+    /// Starts a sweep unless one is already running.
+    private func startSweep() {
+        guard sweep == nil else { return }
         guard AXIsProcessTrusted() else { askForAccessibility(); return }
         let s = Sweep { [weak self] finished in
             if self?.sweep === finished { self?.sweep = nil }
