@@ -73,6 +73,7 @@ Tested on macOS 26.5 with a throwaway app built in a temp folder:
 - Running app not kept in the Dock: quit, icon gone, not left in Recents.
 - Running app kept in the Dock: quit, then removed through Options → Remove from Dock. The Dock didn't restart.
 - Full sweep driven with synthetic mouse and key events: Ctrl-Option-D, the hint, the red highlight, the confirm panel, Escape to cancel, Return to confirm, focus going back to the previous app.
+- 30 sweeps in a row, cancelled by Escape, an empty drag and right-click: the app stays running and the menu bar icon stays.
 - Multi-app selection with a protected app: the panel lists the others with icons, and the protected one shows grey with a lock.
 
 Not tested yet: a closed app in Recents (macOS didn't add the test app to Recents), the preferences fallback, a Dock on the left or right, more than one display.
