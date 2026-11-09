@@ -24,8 +24,8 @@ The Dock exposes its icons through the Accessibility API. `AXUIElementCreateAppl
 This needs the Accessibility permission. The app asks for it on first launch and again if a sweep is started without it.
 
 ### The sweep
-1. One transparent borderless window per screen at screen-saver level, so it sits above the Dock. Crosshair cursor.
-2. Mouse down starts the rectangle, dragging resizes it, and Dock icons under it are highlighted live: red for the ones that will go, grey for protected ones.
+1. One transparent borderless window per screen at screen-saver level, so it sits above the Dock. Crosshair cursor, set directly on every mouse move and allowed while the app is in the background (the private `SetsCursorInBackground` connection property), because cursor rects only apply once the app is active and a menu bar click doesn't always activate it.
+2. Mouse down starts the rectangle, dragging resizes it, and Dock icons under it are highlighted live with a blue rounded square the size of the icon (86% of the Dock tile size, placed 4pt in from the screen edge), or a grey square with a lock for protected ones. The rectangle itself is tinted blue.
 3. Mouse up with nothing selected ends the sweep. With something selected, the confirm panel appears.
 4. Confirm runs the removal and closes the overlay. Cancel, Escape, right-click or a click outside the panel just closes it.
 
@@ -35,7 +35,7 @@ The Dock's own context menu gives the actions. A closed app kept in the Dock, an
 So the order for each selected app is:
 1. If it's running, call `terminate()` on every running instance of that bundle and wait until they've all exited (checking every 200 ms, giving up after 2 minutes so a cancelled save dialog doesn't leave a task hanging).
 2. Re-read the Dock and look for an icon with the same bundle URL. An app that was neither kept nor recent disappears on its own. One that was kept, or that slid into Recents when it quit, is still there.
-3. Open that icon's menu with `AXShowMenu` and press Options, then Remove from Dock.
+3. Open that icon's menu with `AXShowMenu` and press Remove from Dock inside the Options submenu. The submenu's items are readable without opening it, so only the main menu appears, for well under a tenth of a second. (Hiding even that would need either a Dock restart or a screenshot cover with Screen Recording permission; Alara chose to keep the menu and make it fast.)
 
 All apps are quit in parallel. Removals run one at a time, re-reading the Dock before each, because icon positions shift after every removal.
 

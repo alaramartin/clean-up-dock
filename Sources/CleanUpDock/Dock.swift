@@ -18,6 +18,23 @@ struct DockItem {
     var isRemovable: Bool { bundleID != "com.apple.finder" }
 
     var icon: NSImage { NSWorkspace.shared.icon(forFile: url.path) }
+
+    /// A square around just the icon picture, in the same coordinates as `frame`.
+    /// The Dock's AX frame is taller than the icon (it includes space above it and the running dot below).
+    /// The icon slot is `tilesize` points square and sits 4pt in from the screen edge; the picture inside
+    /// fills about 80% of that, so 86% frames it with a little room.
+    var iconFrame: NSRect {
+        let slot = min(Dock.tileSize, frame.width, frame.height)
+        let side = (slot * 0.86).rounded()
+        let edgeGap: CGFloat = 4
+        let center: NSPoint
+        switch Dock.orientation {
+        case "left": center = NSPoint(x: frame.minX + edgeGap + slot / 2, y: frame.midY)
+        case "right": center = NSPoint(x: frame.maxX - edgeGap - slot / 2, y: frame.midY)
+        default: center = NSPoint(x: frame.midX, y: frame.minY + edgeGap + slot / 2)
+        }
+        return NSRect(x: center.x - side / 2, y: center.y - side / 2, width: side, height: side)
+    }
 }
 
 /// Identifies an app across the Dock, the file system and running processes.
@@ -38,6 +55,13 @@ struct AppRef: Hashable {
 }
 
 enum Dock {
+    private static var prefs: UserDefaults? { UserDefaults(suiteName: "com.apple.dock") }
+    static var tileSize: CGFloat {
+        let v = prefs?.double(forKey: "tilesize") ?? 0
+        return v > 0 ? v : 48
+    }
+    static var orientation: String { prefs?.string(forKey: "orientation") ?? "bottom" }
+
     static var pid: pid_t? {
         NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.dock").first?.processIdentifier
     }
@@ -65,6 +89,8 @@ enum Dock {
     }
 
     /// Removes the app's Dock icon through the icon's own Options menu.
+    /// The Options submenu's items are readable before it opens, so it's never opened: only the main
+    /// menu shows, for a moment.
     /// Returns false when the icon is gone already or the menu item couldn't be found.
     @discardableResult
     static func removeViaMenu(_ app: AppRef) -> Bool {
@@ -74,11 +100,16 @@ enum Dock {
         func close() { AXUIElementPerformAction(menu, kAXCancelAction as CFString) }
 
         guard let options = children(menu).first(where: { string($0, kAXTitleAttribute) == "Options" }) else { close(); return false }
-        AXUIElementPerformAction(options, kAXPressAction as CFString)
-        let remove = waitFor {
+        func findRemove() -> AXUIElement? {
             children(options).first { role($0) == kAXMenuRole }.flatMap { sub in
                 children(sub).first { string($0, kAXTitleAttribute) == "Remove from Dock" }
             }
+        }
+        var remove = findRemove()
+        if remove == nil {
+            // Not readable yet: open the submenu after all.
+            AXUIElementPerformAction(options, kAXPressAction as CFString)
+            remove = waitFor(findRemove)
         }
         guard let remove else { close(); return false }
         AXUIElementPerformAction(remove, kAXPressAction as CFString)
@@ -126,9 +157,9 @@ enum Dock {
 
     /// Polls `get` for up to a second. Menus take a moment to appear in the AX tree.
     private static func waitFor<T>(_ get: () -> T?) -> T? {
-        for _ in 0..<50 {
+        for _ in 0..<200 {
             if let v = get() { return v }
-            usleep(20_000)
+            usleep(5_000)
         }
         return nil
     }

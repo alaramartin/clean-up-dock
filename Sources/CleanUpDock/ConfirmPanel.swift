@@ -28,9 +28,8 @@ final class ConfirmPanel: NSPanel {
         let vis = (screen ?? NSScreen.main!).frame
         let size = frame.size
         let gap: CGFloat = 14
-        let orientation = UserDefaults(suiteName: "com.apple.dock")?.string(forKey: "orientation") ?? "bottom"
         var o: NSPoint
-        switch orientation {
+        switch Dock.orientation {
         case "left": o = NSPoint(x: sel.maxX + gap, y: sel.midY - size.height / 2)
         case "right": o = NSPoint(x: sel.minX - gap - size.width, y: sel.midY - size.height / 2)
         default: o = NSPoint(x: sel.midX - size.width / 2, y: sel.maxY + gap)

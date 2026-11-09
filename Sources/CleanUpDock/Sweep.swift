@@ -36,8 +36,13 @@ final class Sweep {
         }
         NSApp.activate(ignoringOtherApps: true)
         windows.first { $0.screen == dockScreen }?.makeKey()
-        NSCursor.crosshair.push()
+        updateCursor()
     }
+
+    /// Crosshair while selecting, arrow while the confirm panel is up.
+    /// Set directly (not with cursor rects) because cursor rects only apply once the app is active,
+    /// and the click on the menu bar icon doesn't always leave it active.
+    func updateCursor() { (isConfirming ? NSCursor.arrow : NSCursor.crosshair).set() }
 
     // MARK: - Drag
 
@@ -80,7 +85,7 @@ final class Sweep {
         p.place(near: selected.map(\.frame).reduce(selected[0].frame) { $0.union($1) }, on: dockScreen)
         p.makeKeyAndOrderFront(nil)
         panel = p
-        NSCursor.pop()
+        updateCursor()
     }
 
     private func commit() {
@@ -98,7 +103,7 @@ final class Sweep {
     func cancel() { teardown(restoreFocus: true) }
 
     private func teardown(restoreFocus: Bool) {
-        if panel == nil { NSCursor.pop() }
+        NSCursor.arrow.set()
         panel?.close()
         panel = nil
         windows.forEach { $0.contentView = nil; $0.close() }
@@ -122,6 +127,7 @@ final class OverlayWindow: NSWindow {
         ignoresMouseEvents = false
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         isReleasedWhenClosed = false
+        acceptsMouseMovedEvents = true
         contentView = OverlayView(sweep: sweep, isDockScreen: screen == sweep.dockScreen)
     }
     override var canBecomeKey: Bool { true }
@@ -141,13 +147,21 @@ final class OverlayView: NSView {
 
     override var acceptsFirstResponder: Bool { true }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
-    override func resetCursorRects() { addCursorRect(bounds, cursor: .crosshair) }
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: .zero, options: [.activeAlways, .inVisibleRect, .mouseMoved, .cursorUpdate, .mouseEnteredAndExited],
+                                       owner: self, userInfo: nil))
+    }
+    override func cursorUpdate(with e: NSEvent) { sweep?.updateCursor() }
+    override func mouseEntered(with e: NSEvent) { sweep?.updateCursor() }
+    override func mouseMoved(with e: NSEvent) { sweep?.updateCursor() }
 
     private func global(_ e: NSEvent) -> NSPoint { window!.convertPoint(toScreen: e.locationInWindow) }
     private func local(_ r: NSRect) -> NSRect { convert(window!.convertFromScreen(r), from: nil) }
 
-    override func mouseDown(with e: NSEvent) { sweep?.mouseDown(at: global(e)) }
-    override func mouseDragged(with e: NSEvent) { sweep?.mouseDragged(to: global(e)) }
+    override func mouseDown(with e: NSEvent) { sweep?.mouseDown(at: global(e)); sweep?.updateCursor() }
+    override func mouseDragged(with e: NSEvent) { sweep?.mouseDragged(to: global(e)); sweep?.updateCursor() }
     override func mouseUp(with e: NSEvent) { sweep?.mouseUp(at: global(e)) }
     override func rightMouseDown(with e: NSEvent) { sweep?.cancel() }
     override func keyDown(with e: NSEvent) {
@@ -157,9 +171,9 @@ final class OverlayView: NSView {
     override func draw(_ dirty: NSRect) {
         guard let sweep else { return }
         for item in sweep.protectedHits {
-            let r = local(item.frame).insetBy(dx: 3, dy: 3)
+            let r = local(item.iconFrame)
             NSColor(white: 0.1, alpha: 0.55).setFill()
-            NSBezierPath(roundedRect: r, xRadius: 12, yRadius: 12).fill()
+            NSBezierPath(roundedRect: r, xRadius: r.width * 0.23, yRadius: r.width * 0.23).fill()
             if let lock = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "Protected")?
                 .withSymbolConfiguration(.init(pointSize: 16, weight: .semibold).applying(.init(paletteColors: [.white]))) {
                 let s = lock.size
@@ -167,19 +181,19 @@ final class OverlayView: NSView {
             }
         }
         for item in sweep.selected {
-            let r = local(item.frame).insetBy(dx: 3, dy: 3)
-            let path = NSBezierPath(roundedRect: r, xRadius: 12, yRadius: 12)
-            NSColor.systemRed.withAlphaComponent(0.28).setFill()
+            let r = local(item.iconFrame).insetBy(dx: 0.5, dy: 0.5)
+            let path = NSBezierPath(roundedRect: r, xRadius: r.width * 0.23, yRadius: r.width * 0.23)
+            NSColor.systemBlue.withAlphaComponent(0.22).setFill()
             path.fill()
-            NSColor.systemRed.setStroke()
-            path.lineWidth = 2
+            NSColor.systemBlue.setStroke()
+            path.lineWidth = 1
             path.stroke()
         }
         if let g = sweep.rect {
             let r = local(g)
-            NSColor.white.withAlphaComponent(0.12).setFill()
+            NSColor.systemBlue.withAlphaComponent(0.2).setFill()
             r.fill()
-            NSColor.white.withAlphaComponent(0.85).setStroke()
+            NSColor.systemBlue.withAlphaComponent(0.9).setStroke()
             let path = NSBezierPath(rect: r.insetBy(dx: 0.5, dy: 0.5))
             path.lineWidth = 1
             path.stroke()

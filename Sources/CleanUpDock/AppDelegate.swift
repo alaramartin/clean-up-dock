@@ -15,6 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.action = #selector(clicked)
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
+        allowCursorChangesInBackground()
         hotKey = HotKey(keyCode: kVK_ANSI_D, modifiers: controlKey | optionKey) { [weak self] in self?.toggleSweep() }
 
         if !AXIsProcessTrusted() {
@@ -31,7 +32,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             statusItem.button?.performClick(nil)
             statusItem.menu = nil
         } else {
-            toggleSweep()
+            // Next run loop turn: the status button resets the cursor while it finishes handling the click.
+            DispatchQueue.main.async { self.toggleSweep() }
         }
     }
 
@@ -114,4 +116,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if let id = Bundle(url: url)?.bundleIdentifier { Protected.add(id) }
         }
     }
+}
+
+// Lets the app change the cursor even when it isn't the active app, so the crosshair always shows
+// when a sweep starts. Private CoreGraphics call, used by screenshot and window-manager apps.
+@_silgen_name("_CGSDefaultConnection") private func _CGSDefaultConnection() -> Int32
+@_silgen_name("CGSSetConnectionProperty") private func CGSSetConnectionProperty(_ cid: Int32, _ target: Int32, _ key: CFString, _ value: CFTypeRef) -> Int32
+
+func allowCursorChangesInBackground() {
+    let cid = _CGSDefaultConnection()
+    _ = CGSSetConnectionProperty(cid, cid, "SetsCursorInBackground" as CFString, kCFBooleanTrue)
 }
