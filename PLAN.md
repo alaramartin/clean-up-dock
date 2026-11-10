@@ -15,7 +15,7 @@ A menu bar app. Click its icon (or press Ctrl-Option-D), drag a rectangle over t
 | Safety net | After you let go, a small panel appears above the selection listing the apps, with Cancel (Escape) and Quit & Remove (Return). |
 | Start a sweep | Left-click the menu bar icon, or Ctrl-Option-D. Escape or right-click cancels at any point. |
 | Open at login | No. |
-| Raycast | A Store extension (`raycast/`) that works on its own, without the menu bar app. Its one no-view command runs a Swift helper (`raycast/swift`) built from the same sweep code (`Sources/CleanUpDock/Shared`, copied by `scripts/sync-raycast.sh`). Protected apps come from a preference. Raycast needs Accessibility. |
+| Raycast | A Store extension (`raycast/`) that works on its own, without the menu bar app. Its one no-view command runs a Swift helper (`raycast/swift`) built from the same sweep code (`Sources/CleanUpDock/Shared`, copied by `scripts/sync-raycast.sh`). Protected apps come from a preference, and Raycast itself is always protected (quitting it would end the command mid-removal). Raycast needs Accessibility. |
 | Other launchers | Opening the app while it's running (`applicationShouldHandleReopen`) starts a sweep, so Spotlight and Raycast's own app search work without the extension. Launching it fresh doesn't. |
 
 ## How it works

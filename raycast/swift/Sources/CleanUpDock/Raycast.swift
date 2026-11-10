@@ -30,8 +30,11 @@ struct SweepResult: Encodable {
   allowCursorChangesInBackground()
 
   let protected = Set(protectedApps.map { $0.trimmingCharacters(in: .whitespaces).lowercased() }.filter { !$0.isEmpty })
+  // Raycast itself is always protected: quitting it would end this command partway through the removal.
   let isProtected: (DockItem) -> Bool = { item in
-    protected.contains(item.title.lowercased()) || item.bundleID.map { protected.contains($0.lowercased()) } == true
+    item.bundleID == "com.raycast.macos"
+      || protected.contains(item.title.lowercased())
+      || item.bundleID.map { protected.contains($0.lowercased()) } == true
   }
   // Raycast has closed its window by now, so the front app is the one to give focus back to.
   let previous = NSWorkspace.shared.frontmostApplication.flatMap { $0.processIdentifier == getpid() ? nil : $0 }
