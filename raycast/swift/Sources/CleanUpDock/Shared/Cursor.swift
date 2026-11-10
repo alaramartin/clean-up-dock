@@ -2,12 +2,15 @@
 
 import AppKit
 
-// Lets the app change the cursor even when it isn't the active app, so the crosshair always shows
-// when a sweep starts. Private CoreGraphics call, used by screenshot and window-manager apps.
-@_silgen_name("_CGSDefaultConnection") private func _CGSDefaultConnection() -> Int32
-@_silgen_name("CGSSetConnectionProperty") private func CGSSetConnectionProperty(_ cid: Int32, _ target: Int32, _ key: CFString, _ value: CFTypeRef) -> Int32
-
+/// Lets the app change the cursor even when it isn't the active app, so the crosshair always shows when a sweep
+/// starts. It uses a private CoreGraphics setting (also used by screenshot and window-manager apps), looked up at
+/// runtime so that if a future macOS drops it, the sweep still works and only this convenience is lost.
 func allowCursorChangesInBackground() {
-    let cid = _CGSDefaultConnection()
-    _ = CGSSetConnectionProperty(cid, cid, "SetsCursorInBackground" as CFString, kCFBooleanTrue)
+    typealias DefaultConnection = @convention(c) () -> Int32
+    typealias SetProperty = @convention(c) (Int32, Int32, CFString, CFTypeRef) -> Int32
+    guard let handle = dlopen(nil, RTLD_NOW),
+          let getConnection = dlsym(handle, "_CGSDefaultConnection"),
+          let setProperty = dlsym(handle, "CGSSetConnectionProperty") else { return }
+    let cid = unsafeBitCast(getConnection, to: DefaultConnection.self)()
+    _ = unsafeBitCast(setProperty, to: SetProperty.self)(cid, cid, "SetsCursorInBackground" as CFString, kCFBooleanTrue)
 }

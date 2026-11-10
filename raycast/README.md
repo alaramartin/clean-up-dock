@@ -11,6 +11,8 @@ Type "Clean Up Dock" in Raycast and press Return. Your cursor turns into a cross
 
 Raycast needs **Accessibility** access to find the icons in your Dock and remove them: **System Settings → Privacy & Security → Accessibility**, then turn on Raycast. If it's missing, the command says so and opens the setting for you.
 
+Icons are removed through each icon's own Dock menu (Options → Remove from Dock), which only exists with those English titles. On a Mac set to another language, the extension edits the Dock's saved list instead and restarts the Dock, so the icons blink for a second.
+
 ## Protected apps
 
 In the command's preferences, list apps a sweep should never quit or remove, by name or bundle ID, separated by commas (for example `Terminal, Notes, com.spotify.client`). They show up grey with a lock while you drag.

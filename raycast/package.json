@@ -25,8 +25,8 @@
           "title": "Protected Apps",
           "type": "textfield",
           "required": false,
-          "default": "",
-          "description": "App names or bundle IDs a sweep never quits or removes, separated by commas. For example: Terminal, Notes, com.spotify.client"
+          "description": "App names or bundle IDs a sweep never quits or removes, separated by commas.",
+          "placeholder": "Terminal, Notes, com.spotify.client"
         }
       ]
     }

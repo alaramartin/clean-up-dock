@@ -1,30 +1,35 @@
 import { PopToRootType, Toast, closeMainWindow, getPreferenceValues, open, showHUD, showToast } from "@raycast/api";
+import { showFailureToast } from "@raycast/utils";
 import { hasAccessibility, sweepDock } from "swift:../swift";
 
 const ACCESSIBILITY_SETTINGS = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility";
 
 export default async function Command() {
-  if (!(await hasAccessibility())) {
-    await showToast({
-      style: Toast.Style.Failure,
-      title: "Raycast needs Accessibility access",
-      message: "Clean Up Dock uses it to find and remove Dock icons.",
-      primaryAction: { title: "Open Accessibility Settings", onAction: () => open(ACCESSIBILITY_SETTINGS) },
-    });
-    return;
-  }
+  try {
+    if (!(await hasAccessibility())) {
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Raycast needs Accessibility access",
+        message: "Clean Up Dock uses it to find and remove Dock icons.",
+        primaryAction: { title: "Open Accessibility Settings", onAction: () => open(ACCESSIBILITY_SETTINGS) },
+      });
+      return;
+    }
 
-  const { protectedApps = "" } = getPreferenceValues<Preferences.CleanUpDock>();
-  const protectedList = protectedApps
-    .split(",")
-    .map((name) => name.trim())
-    .filter(Boolean);
+    const { protectedApps = "" } = getPreferenceValues<Preferences.CleanUpDock>();
+    const protectedList = protectedApps
+      .split(",")
+      .map((name) => name.trim())
+      .filter(Boolean);
 
-  // Close Raycast first so the selection overlay gets the mouse and keyboard.
-  await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
-  const { removed } = await sweepDock(protectedList);
-  if (removed.length > 0) {
-    await showHUD(`Quit and removed ${formatList(removed)}`);
+    // Close Raycast first so the selection overlay gets the mouse and keyboard.
+    await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
+    const { removed } = await sweepDock(protectedList);
+    if (removed.length > 0) {
+      await showHUD(`Quit and removed ${formatList(removed)}`);
+    }
+  } catch (error) {
+    await showFailureToast(error, { title: "Couldn't clean up the Dock" });
   }
 }
 
