@@ -14,17 +14,19 @@ struct SweepResult: Encodable {
   let removed: [String]
 }
 
-/// Runs one sweep. `protectedApps` holds app names or bundle IDs that are never selected.
+/// Runs one sweep. `protectedApps` holds app names or bundle IDs that are never selected. `previousApp` is the
+/// bundle ID of the app that was in front before Raycast opened; it gets focus back afterwards. Raycast stays the
+/// active app after closing its window, so the helper can't find that app by itself.
 ///
 /// This is deliberately not `async`. Raycast's generated entry point awaits async functions on Swift's main
 /// executor, which stops the main run loop in ways that make the process exit while the overlay is up. A plain
 /// function runs on the main thread before that, so AppKit's own `NSApp.run()` can drive the sweep; work the
 /// sweep schedules on the main actor (quitting, removing) still runs, because the run loop services it.
-@raycast func sweepDock(protectedApps: [String]) -> SweepResult {
-  MainActor.assumeIsolated { SweepResult(removed: runSweep(protectedApps: protectedApps)) }
+@raycast func sweepDock(protectedApps: [String], previousApp: String) -> SweepResult {
+  MainActor.assumeIsolated { SweepResult(removed: runSweep(protectedApps: protectedApps, previousApp: previousApp)) }
 }
 
-@MainActor private func runSweep(protectedApps: [String]) -> [String] {
+@MainActor private func runSweep(protectedApps: [String], previousApp: String) -> [String] {
   let app = NSApplication.shared
   app.setActivationPolicy(.accessory)
   allowCursorChangesInBackground()
@@ -36,8 +38,7 @@ struct SweepResult: Encodable {
       || protected.contains(item.title.lowercased())
       || item.bundleID.map { protected.contains($0.lowercased()) } == true
   }
-  // Raycast has closed its window by now, so the front app is the one to give focus back to.
-  let previous = NSWorkspace.shared.frontmostApplication.flatMap { $0.processIdentifier == getpid() ? nil : $0 }
+  let previous = NSRunningApplication.runningApplications(withBundleIdentifier: previousApp).first
 
   var removed: [String] = []
   var sweep: Sweep?

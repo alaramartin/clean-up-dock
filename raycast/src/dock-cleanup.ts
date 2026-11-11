@@ -1,4 +1,13 @@
-import { PopToRootType, Toast, closeMainWindow, getPreferenceValues, open, showHUD, showToast } from "@raycast/api";
+import {
+  PopToRootType,
+  Toast,
+  closeMainWindow,
+  getFrontmostApplication,
+  getPreferenceValues,
+  open,
+  showHUD,
+  showToast,
+} from "@raycast/api";
 import { showFailureToast } from "@raycast/utils";
 import { hasAccessibility, sweepDock } from "swift:../swift";
 
@@ -22,9 +31,12 @@ export default async function Command() {
       .map((name) => name.trim())
       .filter(Boolean);
 
+    // The app that was in front before Raycast opened gets focus back when the sweep ends.
+    const previousApp = await getFrontmostApplication().catch(() => undefined);
+
     // Close Raycast first so the selection overlay gets the mouse and keyboard.
     await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
-    const { removed } = await sweepDock(protectedList);
+    const { removed } = await sweepDock(protectedList, previousApp?.bundleId ?? "");
     if (removed.length > 0) {
       await showHUD(`Quit and removed ${formatList(removed)}`);
     }

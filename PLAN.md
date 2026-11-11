@@ -52,7 +52,8 @@ apps that actually quit and left the Dock, and the command shows them in a HUD.
 ### Focus
 When a sweep ends, focus goes back to the app that was in front before it. The app tracks the last other app to activate
 (`NSWorkspace.didActivateApplicationNotification`), because a link or a reopen brings Dock Cleanup forward before the
-sweep starts.
+sweep starts. The Raycast command passes the app that was in front before Raycast opened (`getFrontmostApplication`), since
+Raycast stays the active app after closing its window.
 
 ### Protected apps
 Stored in UserDefaults as bundle paths. The right-click menu has a "Protected Apps" submenu: each protected app (click to unprotect), then "Add App…" which opens a file picker in /Applications.
