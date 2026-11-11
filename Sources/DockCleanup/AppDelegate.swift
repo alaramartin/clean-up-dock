@@ -12,8 +12,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ note: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "rectangle.dashed", accessibilityDescription: "Clean Up Dock")
-            button.toolTip = "Clean Up Dock: click, then drag over Dock icons (⌃⌥D)"
+            button.image = NSImage(systemSymbolName: "rectangle.dashed", accessibilityDescription: "Dock Cleanup")
+            button.toolTip = "Dock Cleanup: click, then drag over Dock icons (⌃⌥D)"
             button.target = self
             button.action = #selector(clicked)
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -32,11 +32,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    // MARK: - Other ways in: the cleanupdock://sweep link (used by the Raycast extension) and opening the app again
+    // MARK: - Other ways in: the dockcleanup://sweep link (used by the Raycast extension) and opening the app again
     // (Raycast's or Spotlight's app search, Finder, `open -a`) both start a sweep.
 
     func application(_ application: NSApplication, open urls: [URL]) {
-        if urls.contains(where: { $0.scheme == "cleanupdock" && ($0.host ?? "") == "sweep" }) {
+        if urls.contains(where: { $0.scheme == "dockcleanup" && ($0.host ?? "") == "sweep" }) {
             DispatchQueue.main.async { self.startSweep() }
         }
     }
@@ -78,8 +78,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func askForAccessibility() {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
-        alert.messageText = "Clean Up Dock needs Accessibility access"
-        alert.informativeText = "It uses Accessibility to find the icons in your Dock and remove them. Turn on Clean Up Dock in System Settings → Privacy & Security → Accessibility, then try again."
+        alert.messageText = "Dock Cleanup needs Accessibility access"
+        alert.informativeText = "It uses Accessibility to find the icons in your Dock and remove them. Turn on Dock Cleanup in System Settings → Privacy & Security → Accessibility, then try again."
         alert.addButton(withTitle: "Open System Settings")
         alert.addButton(withTitle: "Cancel")
         if alert.runModal() == .alertFirstButtonReturn {
@@ -91,7 +91,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func makeMenu() -> NSMenu {
         let menu = NSMenu()
-        let sweepItem = NSMenuItem(title: "Clean Up Dock", action: #selector(toggleSweep), keyEquivalent: "d")
+        let sweepItem = NSMenuItem(title: "Start Sweep", action: #selector(toggleSweep), keyEquivalent: "d")
         sweepItem.keyEquivalentModifierMask = [.control, .option]
         sweepItem.target = self
         menu.addItem(sweepItem)
@@ -122,7 +122,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(protectedItem)
 
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit Clean Up Dock", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "Quit Dock Cleanup", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         return menu
     }
 
@@ -134,7 +134,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         let panel = NSOpenPanel()
         panel.title = "Protect Apps"
-        panel.message = "Clean Up Dock will never quit or remove these apps."
+        panel.message = "Dock Cleanup will never quit or remove these apps."
         panel.prompt = "Protect"
         panel.allowedContentTypes = [.applicationBundle]
         panel.allowsMultipleSelection = true

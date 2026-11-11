@@ -1,6 +1,6 @@
-# Clean Up Dock
+# Dock Cleanup
 
-Type "Clean Up Dock" in Raycast and press Return. Your cursor turns into a crosshair: drag a box over some Dock icons and let go. A small panel lists the apps you caught, and when you confirm, they quit and are taken out of the Dock.
+Type "Dock Cleanup" in Raycast and press Return. Your cursor turns into a crosshair: drag a box over some Dock icons and let go. A small panel lists the apps you caught, and when you confirm, they quit and are taken out of the Dock.
 
 - Every app icon the box touches counts, including apps in the Dock's Recents section.
 - Running apps quit the normal way, so an app with unsaved work can ask you to save first. Its icon is removed once it has quit; if you cancel the save, the app stays.
@@ -19,4 +19,4 @@ In the command's preferences, list apps a sweep should never quit or remove, by 
 
 ## Menu bar version
 
-The same sweep is also available as a standalone menu bar app with a Ctrl-Option-D shortcut: [github.com/alaramartin/clean-up-dock](https://github.com/alaramartin/clean-up-dock). You don't need it for this extension.
+The same sweep is also available as a standalone menu bar app with a Ctrl-Option-D shortcut: [github.com/alaramartin/dock-cleanup](https://github.com/alaramartin/dock-cleanup). You don't need it for this extension.

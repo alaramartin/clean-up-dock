@@ -1,4 +1,4 @@
-# Clean Up Dock Changelog
+# Dock Cleanup Changelog
 
 ## [Initial Version] - {PR_MERGE_DATE}
 

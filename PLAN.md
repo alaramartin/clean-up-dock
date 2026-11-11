@@ -1,4 +1,4 @@
-# Clean Up Dock: plan
+# Dock Cleanup: plan
 
 A menu bar app. Click its icon (or press Ctrl-Option-D), drag a rectangle over the Dock, let go, confirm, and every app icon inside the rectangle is quit and taken out of the Dock.
 
@@ -15,7 +15,7 @@ A menu bar app. Click its icon (or press Ctrl-Option-D), drag a rectangle over t
 | Safety net | After you let go, a small panel appears above the selection listing the apps, with Cancel (Escape) and Quit & Remove (Return). |
 | Start a sweep | Left-click the menu bar icon, or Ctrl-Option-D. Escape or right-click cancels at any point. |
 | Open at login | No. |
-| Raycast | A Store extension (`raycast/`) that works on its own, without the menu bar app. Its one no-view command runs a Swift helper (`raycast/swift`) built from the same sweep code (`Sources/CleanUpDock/Shared`, copied by `scripts/sync-raycast.sh`). Protected apps come from a preference, and Raycast itself is always protected (quitting it would end the command mid-removal). Raycast needs Accessibility. |
+| Raycast | A Store extension (`raycast/`) that works on its own, without the menu bar app. Its one no-view command runs a Swift helper (`raycast/swift`) built from the same sweep code (`Sources/DockCleanup/Shared`, copied by `scripts/sync-raycast.sh`). Protected apps come from a preference, and Raycast itself is always protected (quitting it would end the command mid-removal). Raycast needs Accessibility. |
 | Other launchers | Opening the app while it's running (`applicationShouldHandleReopen`) starts a sweep, so Spotlight and Raycast's own app search work without the extension. Launching it fresh doesn't. |
 
 ## How it works
@@ -51,7 +51,7 @@ apps that actually quit and left the Dock, and the command shows them in a HUD.
 
 ### Focus
 When a sweep ends, focus goes back to the app that was in front before it. The app tracks the last other app to activate
-(`NSWorkspace.didActivateApplicationNotification`), because a link or a reopen brings Clean Up Dock forward before the
+(`NSWorkspace.didActivateApplicationNotification`), because a link or a reopen brings Dock Cleanup forward before the
 sweep starts.
 
 ### Protected apps
@@ -61,8 +61,8 @@ Stored in UserDefaults as bundle paths. The right-click menu has a "Protected Ap
 
 ```
 Package.swift
-build.sh                     builds "Clean Up Dock.app", signs it with the Apple Development identity
-Sources/CleanUpDock/
+build.sh                     builds "Dock Cleanup.app", signs it with the Apple Development identity
+Sources/DockCleanup/
   main.swift                 app entry, accessory activation policy
   AppDelegate.swift          status item, right-click menu, hotkey, permission check
   Dock.swift                 read Dock icons, remove one via its menu, defaults fallback

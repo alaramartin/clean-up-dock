@@ -26,11 +26,11 @@ echo "Releasing $VERSION (previous: ${LATEST#v})"
 git push -q
 
 VERSION="$VERSION" ./build.sh --zip
-rm -rf "build/Clean Up Dock.app" # only the zip is needed; a stray copy shows up twice in Spotlight
+rm -rf "build/Dock Cleanup.app" # only the zip is needed; a stray copy shows up twice in Spotlight
 
 if [[ -n "$NOTES" ]]; then
-    gh release create "v$VERSION" build/CleanUpDock.zip --title "Clean Up Dock $VERSION" --target main --notes-file "$NOTES"
+    gh release create "v$VERSION" build/DockCleanup.zip --title "Dock Cleanup $VERSION" --target main --notes-file "$NOTES"
 else
-    gh release create "v$VERSION" build/CleanUpDock.zip --title "Clean Up Dock $VERSION" --target main --generate-notes
+    gh release create "v$VERSION" build/DockCleanup.zip --title "Dock Cleanup $VERSION" --target main --generate-notes
 fi
 git fetch --tags -q

@@ -1,4 +1,4 @@
-// Copied from Sources/CleanUpDock/Shared/Cursor.swift by scripts/sync-raycast.sh. Edit the original, then run the script.
+// Copied from Sources/DockCleanup/Shared/Cursor.swift by scripts/sync-raycast.sh. Edit the original, then run the script.
 
 import AppKit
 

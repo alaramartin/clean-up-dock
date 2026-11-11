@@ -10,13 +10,13 @@ export default async function Command() {
       await showToast({
         style: Toast.Style.Failure,
         title: "Raycast needs Accessibility access",
-        message: "Clean Up Dock uses it to find and remove Dock icons.",
+        message: "Dock Cleanup uses it to find and remove Dock icons.",
         primaryAction: { title: "Open Accessibility Settings", onAction: () => open(ACCESSIBILITY_SETTINGS) },
       });
       return;
     }
 
-    const { protectedApps = "" } = getPreferenceValues<Preferences.CleanUpDock>();
+    const { protectedApps = "" } = getPreferenceValues<Preferences.DockCleanup>();
     const protectedList = protectedApps
       .split(",")
       .map((name) => name.trim())

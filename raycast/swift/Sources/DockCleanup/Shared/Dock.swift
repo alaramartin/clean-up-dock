@@ -1,4 +1,4 @@
-// Copied from Sources/CleanUpDock/Shared/Dock.swift by scripts/sync-raycast.sh. Edit the original, then run the script.
+// Copied from Sources/DockCleanup/Shared/Dock.swift by scripts/sync-raycast.sh. Edit the original, then run the script.
 
 import AppKit
 import ApplicationServices

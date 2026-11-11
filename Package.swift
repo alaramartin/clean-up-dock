@@ -2,9 +2,9 @@
 import PackageDescription
 
 let package = Package(
-    name: "CleanUpDock",
+    name: "DockCleanup",
     platforms: [.macOS(.v14)],
     targets: [
-        .executableTarget(name: "CleanUpDock", path: "Sources/CleanUpDock")
+        .executableTarget(name: "DockCleanup", path: "Sources/DockCleanup")
     ]
 )
