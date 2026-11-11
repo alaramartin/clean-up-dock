@@ -24,7 +24,6 @@ import RaycastSwiftMacros
 @MainActor private func runSweep(protectedApps: [String], previousApp: String) {
   let app = NSApplication.shared
   app.setActivationPolicy(.accessory)
-  allowCursorChangesInBackground()
 
   let protected = Set(protectedApps.map { $0.trimmingCharacters(in: .whitespaces).lowercased() }.filter { !$0.isEmpty })
   // Raycast itself is always protected: quitting it would end this command partway through the removal.

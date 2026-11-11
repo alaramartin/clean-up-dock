@@ -26,7 +26,7 @@ The Dock exposes its icons through the Accessibility API. `AXUIElementCreateAppl
 This needs the Accessibility permission. The app asks for it on first launch and again if a sweep is started without it.
 
 ### The sweep
-1. One transparent borderless window per screen at screen-saver level, so it sits above the Dock. Crosshair cursor, set directly on every mouse move and allowed while the app is in the background (the private `SetsCursorInBackground` connection property), because cursor rects only apply once the app is active and a menu bar click doesn't always activate it.
+1. One transparent borderless window per screen at screen-saver level, so it sits above the Dock. Crosshair cursor, set directly on every mouse move and allowed while the app is in the background (the private `SetsCursorInBackground` connection property), because cursor rects only apply once the app is active and a menu bar click doesn't always activate it. Only the menu bar app does this (`Cursor.swift`, outside `Shared/`); the Raycast helper is always the active app during a sweep, so it uses no private API.
 2. Mouse down starts the rectangle, dragging resizes it, and Dock icons under it are highlighted live with a blue rounded square the size of the icon (86% of the Dock tile size, placed 4pt in from the screen edge), or a grey square with a lock for protected ones. The rectangle itself is tinted blue.
 3. Mouse up with nothing selected ends the sweep. With something selected, the confirm panel appears.
 4. Confirm runs the removal and closes the overlay. Cancel, Escape, right-click or a click outside the panel just closes it.
