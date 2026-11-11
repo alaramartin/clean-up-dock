@@ -9,11 +9,6 @@ import RaycastSwiftMacros
   AXIsProcessTrusted()
 }
 
-struct SweepResult: Encodable {
-  /// Names of the apps that were quit and removed. Empty when the sweep was cancelled.
-  let removed: [String]
-}
-
 /// Runs one sweep. `protectedApps` holds app names or bundle IDs that are never selected. `previousApp` is the
 /// bundle ID of the app that was in front before Raycast opened; it gets focus back afterwards. Raycast stays the
 /// active app after closing its window, so the helper can't find that app by itself.
@@ -22,11 +17,11 @@ struct SweepResult: Encodable {
 /// executor, which stops the main run loop in ways that make the process exit while the overlay is up. A plain
 /// function runs on the main thread before that, so AppKit's own `NSApp.run()` can drive the sweep; work the
 /// sweep schedules on the main actor (quitting, removing) still runs, because the run loop services it.
-@raycast func sweepDock(protectedApps: [String], previousApp: String) -> SweepResult {
-  MainActor.assumeIsolated { SweepResult(removed: runSweep(protectedApps: protectedApps, previousApp: previousApp)) }
+@raycast func sweepDock(protectedApps: [String], previousApp: String) {
+  MainActor.assumeIsolated { runSweep(protectedApps: protectedApps, previousApp: previousApp) }
 }
 
-@MainActor private func runSweep(protectedApps: [String], previousApp: String) -> [String] {
+@MainActor private func runSweep(protectedApps: [String], previousApp: String) {
   let app = NSApplication.shared
   app.setActivationPolicy(.accessory)
   allowCursorChangesInBackground()
@@ -40,10 +35,8 @@ struct SweepResult: Encodable {
   }
   let previous = NSRunningApplication.runningApplications(withBundleIdentifier: previousApp).first
 
-  var removed: [String] = []
   var sweep: Sweep?
-  sweep = Sweep(previousApp: previous, isProtected: isProtected, onComplete: { names in
-    removed = names
+  sweep = Sweep(previousApp: previous, isProtected: isProtected, onComplete: {
     // Leave NSApp.run(): stop() takes effect after the next event, so post one.
     app.stop(nil)
     if let wake = NSEvent.otherEvent(with: .applicationDefined, location: .zero, modifierFlags: [], timestamp: 0,
@@ -55,5 +48,4 @@ struct SweepResult: Encodable {
   RunLoop.main.perform { MainActor.assumeIsolated { sweep?.start() } }
   app.run()
   sweep = nil
-  return removed
 }

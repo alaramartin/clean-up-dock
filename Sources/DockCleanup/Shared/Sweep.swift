@@ -12,9 +12,8 @@ final class Sweep {
     private let isProtected: (DockItem) -> Bool
     /// Called when the overlay closes.
     private let onFinish: (Sweep) -> Void
-    /// Called when everything is done: with the names of the apps that quit and left the Dock (not ones that
-    /// refused to quit), or with none right after a cancel.
-    private let onComplete: ([String]) -> Void
+    /// Called when everything is done: after the selected apps have quit and left the Dock, or right after a cancel.
+    private let onComplete: () -> Void
 
     /// The drag rectangle in global Cocoa coordinates, while the mouse is down.
     private(set) var rect: NSRect?
@@ -23,7 +22,7 @@ final class Sweep {
     var isConfirming: Bool { panel != nil }
 
     init(previousApp: NSRunningApplication?, isProtected: @escaping (DockItem) -> Bool,
-         onFinish: @escaping (Sweep) -> Void = { _ in }, onComplete: @escaping ([String]) -> Void = { _ in }) {
+         onFinish: @escaping (Sweep) -> Void = { _ in }, onComplete: @escaping () -> Void = {}) {
         self.previousApp = previousApp
         self.isProtected = isProtected
         items = Dock.appItems().filter(\.isRemovable)
@@ -103,23 +102,21 @@ final class Sweep {
     }
 
     private func commit() {
-        let chosen = selected
-        let apps = chosen.map(\.ref)
+        let apps = selected.map(\.ref)
         teardown(restoreFocus: false)
         Task { @MainActor in
-            let done = await Remover.run(apps)
-            let names = chosen.filter { item in done.contains { $0.matches(item.ref) } }.map(\.title)
+            await Remover.run(apps)
             // Give focus back to whatever was in front, unless it was just quit.
             if let prev = previousApp, !prev.isTerminated, !apps.contains(where: { $0.matches(prev) }) {
                 prev.activate()
             }
-            onComplete(names)
+            onComplete()
         }
     }
 
     func cancel() {
         teardown(restoreFocus: true)
-        onComplete([])
+        onComplete()
     }
 
     private func teardown(restoreFocus: Bool) {

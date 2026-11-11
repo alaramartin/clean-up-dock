@@ -46,8 +46,7 @@ All apps are quit in parallel. Removals run one at a time, re-reading the Dock b
 ### The Raycast helper
 Raycast runs each `@raycast` Swift function as a short-lived helper process whose generated entry point is `async`.
 `sweepDock` is deliberately synchronous and runs `NSApp.run()` itself: inside an async function, Swift's main executor
-stops the main run loop while AppKit is handling events, and the process exits mid-sweep. It returns the names of the
-apps that actually quit and left the Dock, and the command shows them in a HUD.
+stops the main run loop while AppKit is handling events, and the process exits mid-sweep. It returns when the sweep ends; the command shows nothing afterwards, since the Dock itself shows what changed.
 
 ### Focus
 When a sweep ends, focus goes back to the app that was in front before it. The app tracks the last other app to activate

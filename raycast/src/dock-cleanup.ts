@@ -5,7 +5,6 @@ import {
   getFrontmostApplication,
   getPreferenceValues,
   open,
-  showHUD,
   showToast,
 } from "@raycast/api";
 import { showFailureToast } from "@raycast/utils";
@@ -36,16 +35,9 @@ export default async function Command() {
 
     // Close Raycast first so the selection overlay gets the mouse and keyboard.
     await closeMainWindow({ clearRootSearch: true, popToRootType: PopToRootType.Immediate });
-    const { removed } = await sweepDock(protectedList, previousApp?.bundleId ?? "");
-    if (removed.length > 0) {
-      await showHUD(`Quit and removed ${formatList(removed)}`);
-    }
+    await sweepDock(protectedList, previousApp?.bundleId ?? "");
   } catch (error) {
     await showFailureToast(error, { title: "Couldn't clean up the Dock" });
   }
 }
 
-function formatList(names: string[]) {
-  if (names.length <= 2) return names.join(" and ");
-  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
-}
