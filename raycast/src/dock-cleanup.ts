@@ -40,4 +40,3 @@ export default async function Command() {
     await showFailureToast(error, { title: "Couldn't clean up the Dock" });
   }
 }
-
