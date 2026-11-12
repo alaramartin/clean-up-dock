@@ -7,6 +7,6 @@ DEST=raycast/swift/Sources/DockCleanup/Shared
 rm -rf "$DEST"
 mkdir -p "$DEST"
 for f in Sources/DockCleanup/Shared/*.swift; do
-    { echo "// Copied from $f by scripts/sync-raycast.sh. Edit the original, then run the script."; echo; cat "$f"; } > "$DEST/$(basename "$f")"
+    { echo "// Shared with the Dock Cleanup menu bar app: https://github.com/alaramartin/dock-cleanup/blob/main/$f"; echo; cat "$f"; } > "$DEST/$(basename "$f")"
 done
 echo "Copied $(ls "$DEST" | wc -l | tr -d ' ') files to $DEST"

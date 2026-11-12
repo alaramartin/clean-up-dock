@@ -1,4 +1,4 @@
-// Copied from Sources/DockCleanup/Shared/Remover.swift by scripts/sync-raycast.sh. Edit the original, then run the script.
+// Shared with the Dock Cleanup menu bar app: https://github.com/alaramartin/dock-cleanup/blob/main/Sources/DockCleanup/Shared/Remover.swift
 
 import AppKit
 
